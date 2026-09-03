@@ -41,7 +41,7 @@ def redact_secrets(value: str) -> str:
     return redacted
 
 
-def _is_secret_key(key: str) -> bool:
+def is_secret_key(key: str) -> bool:
     lowered = key.lower()
     return lowered in _SECRET_KEYS or lowered.endswith("_token") or lowered.endswith("_password")
 
@@ -52,7 +52,7 @@ def redact_any(value: Any) -> Any:
     if isinstance(value, dict):
         redacted: dict[Any, Any] = {}
         for key, item in value.items():
-            if isinstance(key, str) and _is_secret_key(key):
+            if isinstance(key, str) and is_secret_key(key):
                 redacted[key] = "[REDACTED]"
             else:
                 redacted[key] = redact_any(item)

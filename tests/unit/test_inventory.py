@@ -51,8 +51,16 @@ def test_crud_and_persistence(legion_home: LegionPaths) -> None:
 
 def test_duplicate_node_rejected(legion_home: LegionPaths) -> None:
     inventory_service.add_node(_node("sentinel-north-door-01"))
-    with pytest.raises(InventoryError, match="already exists"):
+    with pytest.raises(InventoryError, match="duplicate Sentinel ID"):
         inventory_service.add_node(_node("sentinel-north-door-01"))
+
+
+def test_inconsistent_hostname_rejected(legion_home: LegionPaths) -> None:
+    inventory_service.add_node(_node("sentinel-north-door-01", hostname="door.local"))
+    with pytest.raises(InventoryError, match="inconsistent hostname"):
+        inventory_service.add_node(
+            _node("sentinel-hall-b-01", hostname="door.local", zone="Hall B")
+        )
 
 
 def test_atomic_write_preserves_original_on_failure(

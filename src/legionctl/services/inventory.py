@@ -27,10 +27,47 @@ def list_groups(paths: LegionPaths | None = None) -> list[Group]:
     return list(load_inventory(paths).groups)
 
 
+def get_node(sentinel_id: str, paths: LegionPaths | None = None) -> SentinelNode:
+    node = load_inventory(paths).node_by_id(sentinel_id)
+    if node is None:
+        raise TargetNotFoundError(f"Sentinel node '{sentinel_id}' is not in inventory")
+    return node
+
+
+def identity_conflicts(
+    inventory: Inventory,
+    *,
+    sentinel_id: str,
+    hostname: str | None,
+    ignore_existing_id: bool = False,
+) -> list[str]:
+    messages: list[str] = []
+    existing = inventory.node_by_id(sentinel_id)
+    if existing is not None and not ignore_existing_id:
+        messages.append(f"duplicate Sentinel ID '{sentinel_id}'")
+        if hostname and existing.hostname and existing.hostname != hostname:
+            messages.append(
+                f"inconsistent hostname for '{sentinel_id}': inventory has "
+                f"'{existing.hostname}', new value is '{hostname}'"
+            )
+    if hostname:
+        for node in inventory.nodes:
+            if node.hostname == hostname and node.sentinel_id != sentinel_id:
+                messages.append(
+                    f"inconsistent hostname '{hostname}' already assigned to '{node.sentinel_id}'"
+                )
+    return messages
+
+
 def add_node(node: SentinelNode, paths: LegionPaths | None = None) -> Inventory:
     inventory = load_inventory(paths)
-    if inventory.node_by_id(node.sentinel_id) is not None:
-        raise InventoryError(f"Sentinel node '{node.sentinel_id}' already exists")
+    conflicts = identity_conflicts(
+        inventory,
+        sentinel_id=node.sentinel_id,
+        hostname=node.hostname,
+    )
+    if conflicts:
+        raise InventoryError("; ".join(conflicts))
     inventory.nodes.append(node)
     save_inventory(inventory, paths)
     return inventory

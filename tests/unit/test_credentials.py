@@ -1,6 +1,15 @@
 from __future__ import annotations
 
-from legionctl.services.credentials import CredentialStore, EncryptedFileTokenStore
+from io import StringIO
+
+import pytest
+
+from legionctl.errors import CredentialError
+from legionctl.services.credentials import (
+    CredentialStore,
+    EncryptedFileTokenStore,
+    read_bearer_token,
+)
 from legionctl.settings import LegionPaths
 
 
@@ -37,3 +46,24 @@ def test_encrypted_file_store_does_not_write_plaintext(legion_home: LegionPaths)
     inventory = legion_home.inventory_file
     if inventory.exists():
         assert "super-secret-token" not in inventory.read_text(encoding="utf-8")
+
+
+def test_read_bearer_token_stdin_and_keyring(legion_home: LegionPaths) -> None:
+    token = read_bearer_token(
+        "sentinel-north-door-01",
+        token_stdin=True,
+        stdin=StringIO("super-secret-token\n"),
+    )
+    assert token == "super-secret-token"
+    store = CredentialStore(legion_home, store=MemoryStore())
+    store.set_token("sentinel-north-door-01", "from-keyring")
+    imported = read_bearer_token(
+        "sentinel-north-door-01",
+        from_keyring=True,
+        credentials=store,
+    )
+    assert imported == "from-keyring"
+    with pytest.raises(CredentialError, match="only one"):
+        read_bearer_token("x", token_stdin=True, from_keyring=True)
+    with pytest.raises(CredentialError, match="empty"):
+        read_bearer_token("x", token_stdin=True, stdin=StringIO("\n"))

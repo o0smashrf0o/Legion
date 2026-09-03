@@ -58,6 +58,18 @@ class NodeConflictError(SentinelApiError):
 class NodeValidationError(SentinelApiError):
     exit_code = 1
 
+    def __init__(self, message: str = "", errors: list[str] | None = None) -> None:
+        self.errors = errors or []
+        super().__init__(message or "Sentinel rejected the request")
+
+
+class MalformedResponseError(SentinelApiError):
+    exit_code = 1
+
+
+class DiscoveryError(LegionError):
+    exit_code = 1
+
 
 class ConfirmationDeclined(LegionError):
     exit_code = 4

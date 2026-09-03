@@ -12,6 +12,7 @@ class AppContext:
     verbose: bool = False
     debug: bool = False
     dry_run: bool = False
+    yes: bool = False
     insecure_skip_tls_verify: bool = False
 
 

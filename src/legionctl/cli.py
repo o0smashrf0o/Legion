@@ -8,6 +8,8 @@ from legionctl import __version__
 from legionctl.commands import group as group_commands
 from legionctl.commands import node as node_commands
 from legionctl.commands import profile as profile_commands
+from legionctl.commands.discover import discover_cmd
+from legionctl.commands.status import events_cmd, health_cmd, status_cmd
 from legionctl.context import AppContext
 from legionctl.output.console import print_warning
 from legionctl.redaction import setup_logging
@@ -21,6 +23,10 @@ app = typer.Typer(
 app.add_typer(node_commands.app, name="node")
 app.add_typer(group_commands.app, name="group")
 app.add_typer(profile_commands.app, name="profile")
+app.command("discover")(discover_cmd)
+app.command("status")(status_cmd)
+app.command("health")(health_cmd)
+app.command("events")(events_cmd)
 
 
 def _version_callback(value: bool) -> None:
@@ -51,6 +57,10 @@ def main(
     dry_run: Annotated[
         bool,
         typer.Option("--dry-run", help="Show write actions without applying them."),
+    ] = False,
+    yes: Annotated[
+        bool,
+        typer.Option("--yes", help="Skip confirmation prompts."),
     ] = False,
     insecure_skip_tls_verify: Annotated[
         bool,
@@ -83,6 +93,7 @@ def main(
         verbose=verbose,
         debug=debug,
         dry_run=dry_run,
+        yes=yes,
         insecure_skip_tls_verify=insecure_skip_tls_verify,
     )
 

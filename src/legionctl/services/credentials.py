@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import getpass
 import json
 import os
-from typing import Protocol
+import sys
+from collections.abc import Callable
+from typing import Protocol, TextIO
 
 from cryptography.fernet import Fernet, InvalidToken
 
@@ -155,3 +158,31 @@ class CredentialStore:
     def has_token(self, sentinel_id: str) -> bool:
         token = self.get_token(sentinel_id)
         return bool(token)
+
+
+def read_bearer_token(
+    sentinel_id: str,
+    *,
+    token_stdin: bool = False,
+    from_keyring: bool = False,
+    credentials: CredentialStore | None = None,
+    stdin: TextIO | None = None,
+    prompt: Callable[[str], str] | None = None,
+) -> str:
+    if token_stdin and from_keyring:
+        raise CredentialError("use only one of --token-stdin or --from-keyring")
+    if from_keyring:
+        store = credentials or CredentialStore()
+        token = store.get_token(sentinel_id)
+        if not token:
+            raise CredentialError(f"no bearer token stored for {sentinel_id}")
+        return token
+    if token_stdin:
+        handle = stdin if stdin is not None else sys.stdin
+        token = handle.readline().strip()
+    else:
+        reader = prompt or getpass.getpass
+        token = reader(f"Bearer token for {sentinel_id}: ").strip()
+    if not token:
+        raise CredentialError("token must not be empty")
+    return token

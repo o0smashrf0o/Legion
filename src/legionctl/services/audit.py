@@ -14,6 +14,16 @@ def utc_now() -> datetime:
     return datetime.now(UTC)
 
 
+def format_utc(value: datetime | None) -> str | None:
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        utc = value.replace(microsecond=0)
+    else:
+        utc = value.astimezone(UTC).replace(microsecond=0)
+    return utc.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def current_operator() -> str:
     try:
         return getpass.getuser()

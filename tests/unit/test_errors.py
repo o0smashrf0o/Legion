@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import httpx
+
+from legionctl.clients.sentinel_api import map_transport_error
 from legionctl.errors import (
     AuthenticationError,
     ConfirmationDeclined,
@@ -7,6 +10,7 @@ from legionctl.errors import (
     NodeUnreachableError,
     NodeValidationError,
     SentinelApiError,
+    TlsError,
     exit_code_for,
     map_http_status,
 )
@@ -22,6 +26,18 @@ def test_http_status_mapping() -> None:
     assert exit_code_for(AuthenticationError("no")) == 3
     assert exit_code_for(NodeUnreachableError("down")) == 2
     assert exit_code_for(ConfirmationDeclined("no")) == 4
+
+
+def test_transport_error_mapping() -> None:
+    assert isinstance(map_transport_error(httpx.ReadTimeout("read timeout")), NodeUnreachableError)
+    assert isinstance(
+        map_transport_error(httpx.ConnectError("Connection refused")),
+        NodeUnreachableError,
+    )
+    tls = map_transport_error(httpx.ConnectError("CERTIFICATE_VERIFY_FAILED"))
+    assert isinstance(tls, TlsError)
+    assert tls.exit_code == 3
+    assert "CERTIFICATE" not in str(tls)
 
 
 def test_confirmation_yes_skips_prompt() -> None:

@@ -19,6 +19,10 @@ def test_help() -> None:
     assert "profile" in result.stdout
     assert "node" in result.stdout
     assert "group" in result.stdout
+    assert "discover" in result.stdout
+    assert "status" in result.stdout
+    assert "health" in result.stdout
+    assert "events" in result.stdout
 
 
 def test_profile_validate_example(example_profile_path: Path) -> None:

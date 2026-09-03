@@ -179,3 +179,19 @@ class RecentEventsResponse(BaseModel):
     events: list[SentinelEvent] = Field(default_factory=list)
 
 
+class ScanResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    accepted: bool = True
+    action: str | None = None
+    technology: str | None = None
+    duration_seconds: int | None = None
+
+
+class RebootResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    accepted: bool = True
+    reason: str | None = None
+
+
