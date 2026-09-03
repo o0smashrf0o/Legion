@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "profile_id": "event-alpha",
+  "revision": 4,
+  "description": "Event Alpha baseline SOI profile",
+  "default_cooldown_seconds": 300,
+  "scan_policy": {
+    "wifi_2_4_channels": [1, 6, 11],
+    "wifi_5_channels": [36, 40, 44, 48],
+    "wifi_scan_interval_seconds": 15,
+    "wifi_dwell_ms": 250,
+    "ble_scan_interval_ms": 100,
+    "ble_scan_window_ms": 30,
+    "classic_inquiry_seconds": 10,
+    "classic_rest_seconds": 20
+  },
+  "rules": [
+    {
+      "id": "fox-03-classic",
+      "name": "FOX-03 Bluetooth Classic",
+      "enabled": true,
+      "technology": "bt_classic",
+      "match": {
+        "all": [
+          {
+            "field": "address",
+            "equals": "AA:BB:CC:DD:EE:FF"
+          }
+        ]
+      },
+      "minimum_rssi_dbm": -78,
+      "required_hits": 2,
+      "window_seconds": 20,
+      "cooldown_seconds": 300,
+      "severity": "high"
+    },
+    {
+      "id": "fox-03-ble",
+      "name": "FOX-03 BLE",
+      "enabled": true,
+      "technology": "ble",
+      "match": {
+        "all": [
+          {
+            "field": "service_uuid",
+            "equals": "12345678-1234-1234-1234-1234567890ab"
+          },
+          {
+            "field": "manufacturer_id",
+            "equals": "0x1234"
+          }
+        ],
+        "exclude": [
+          {
+            "field": "local_name",
+            "contains": "TEST"
+          }
+        ]
+      },
+      "minimum_rssi_dbm": -75,
+      "required_hits": 3,
+      "window_seconds": 12,
+      "cooldown_seconds": 300,
+      "severity": "high"
+    },
+    {
+      "id": "authorized-wifi-asset-01",
+      "name": "Authorized Wi-Fi asset",
+      "enabled": true,
+      "technology": "wifi",
+      "band": "5ghz",
+      "match": {
+        "all": [
+          {
+            "field": "bssid",
+            "equals": "AA:BB:CC:DD:EE:FF"
+          }
+        ]
+      },
+      "minimum_rssi_dbm": -78,
+      "required_hits": 3,
+      "window_seconds": 15,
+      "cooldown_seconds": 300,
+      "severity": "medium"
+    }
+  ]
+}

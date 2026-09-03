@@ -1,0 +1,321 @@
+{
+  "$defs": {
+    "MatchCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "minLength": 1,
+          "title": "Field",
+          "type": "string"
+        },
+        "equals": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Equals"
+        },
+        "contains": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contains"
+        },
+        "prefix": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Prefix"
+        },
+        "regex": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Regex"
+        },
+        "exists": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exists"
+        }
+      },
+      "required": [
+        "field"
+      ],
+      "title": "MatchCondition",
+      "type": "object"
+    },
+    "MatchModel": {
+      "additionalProperties": false,
+      "properties": {
+        "all": {
+          "items": {
+            "$ref": "#/$defs/MatchCondition"
+          },
+          "title": "All",
+          "type": "array"
+        },
+        "any": {
+          "items": {
+            "$ref": "#/$defs/MatchCondition"
+          },
+          "title": "Any",
+          "type": "array"
+        },
+        "exclude": {
+          "items": {
+            "$ref": "#/$defs/MatchCondition"
+          },
+          "title": "Exclude",
+          "type": "array"
+        }
+      },
+      "title": "MatchModel",
+      "type": "object"
+    },
+    "Rule": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "technology": {
+          "enum": [
+            "wifi",
+            "ble",
+            "bt_classic"
+          ],
+          "title": "Technology",
+          "type": "string"
+        },
+        "band": {
+          "anyOf": [
+            {
+              "enum": [
+                "2.4ghz",
+                "5ghz"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Band"
+        },
+        "match": {
+          "$ref": "#/$defs/MatchModel"
+        },
+        "minimum_rssi_dbm": {
+          "maximum": 0,
+          "minimum": -100,
+          "title": "Minimum Rssi Dbm",
+          "type": "integer"
+        },
+        "required_hits": {
+          "minimum": 1,
+          "title": "Required Hits",
+          "type": "integer"
+        },
+        "window_seconds": {
+          "maximum": 3600,
+          "minimum": 1,
+          "title": "Window Seconds",
+          "type": "integer"
+        },
+        "cooldown_seconds": {
+          "maximum": 86400,
+          "minimum": 0,
+          "title": "Cooldown Seconds",
+          "type": "integer"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "technology",
+        "match",
+        "minimum_rssi_dbm",
+        "required_hits",
+        "window_seconds",
+        "cooldown_seconds",
+        "severity"
+      ],
+      "title": "Rule",
+      "type": "object"
+    },
+    "ScanPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "wifi_2_4_channels": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Wifi 2 4 Channels",
+          "type": "array"
+        },
+        "wifi_5_channels": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Wifi 5 Channels",
+          "type": "array"
+        },
+        "wifi_scan_interval_seconds": {
+          "anyOf": [
+            {
+              "maximum": 3600,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Wifi Scan Interval Seconds"
+        },
+        "wifi_dwell_ms": {
+          "maximum": 5000,
+          "minimum": 10,
+          "title": "Wifi Dwell Ms",
+          "type": "integer"
+        },
+        "ble_scan_interval_ms": {
+          "maximum": 10000,
+          "minimum": 1,
+          "title": "Ble Scan Interval Ms",
+          "type": "integer"
+        },
+        "ble_scan_window_ms": {
+          "maximum": 10000,
+          "minimum": 1,
+          "title": "Ble Scan Window Ms",
+          "type": "integer"
+        },
+        "classic_inquiry_seconds": {
+          "maximum": 60,
+          "minimum": 1,
+          "title": "Classic Inquiry Seconds",
+          "type": "integer"
+        },
+        "classic_rest_seconds": {
+          "maximum": 3600,
+          "minimum": 1,
+          "title": "Classic Rest Seconds",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "wifi_dwell_ms",
+        "ble_scan_interval_ms",
+        "ble_scan_window_ms",
+        "classic_inquiry_seconds",
+        "classic_rest_seconds"
+      ],
+      "title": "ScanPolicy",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "minimum": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "profile_id": {
+      "minLength": 1,
+      "title": "Profile Id",
+      "type": "string"
+    },
+    "revision": {
+      "minimum": 1,
+      "title": "Revision",
+      "type": "integer"
+    },
+    "description": {
+      "default": "",
+      "title": "Description",
+      "type": "string"
+    },
+    "default_cooldown_seconds": {
+      "maximum": 86400,
+      "minimum": 0,
+      "title": "Default Cooldown Seconds",
+      "type": "integer"
+    },
+    "scan_policy": {
+      "$ref": "#/$defs/ScanPolicy"
+    },
+    "rules": {
+      "items": {
+        "$ref": "#/$defs/Rule"
+      },
+      "title": "Rules",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "profile_id",
+    "revision",
+    "default_cooldown_seconds",
+    "scan_policy"
+  ],
+  "title": "Profile",
+  "type": "object"
+}
