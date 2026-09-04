@@ -5,6 +5,7 @@ from typing import Any
 
 from rich.console import Console
 
+from legionctl.models.actions import ActionResult
 from legionctl.models.deploy import ProfilePlanRow, ProfilePushResult
 from legionctl.models.discovery import DiscoveredService, DiscoveryIssue
 from legionctl.models.fleet import FleetNodeEvents, FleetNodeHealth, FleetNodeStatus
@@ -103,3 +104,7 @@ def profile_push_payload(
         "plan": [row.model_dump(mode="json") for row in plan],
         "results": [row.model_dump(mode="json") for row in results],
     }
+
+
+def action_payload(rows: list[ActionResult], *, dry_run: bool) -> dict[str, Any]:
+    return {"dry_run": dry_run, "results": [row.model_dump(mode="json") for row in rows]}

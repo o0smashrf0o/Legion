@@ -7,6 +7,7 @@ from rich.markup import escape
 from rich.table import Table
 
 from legionctl.errors import ConfirmationDeclined
+from legionctl.models.actions import ActionResult
 from legionctl.models.deploy import (
     ProfilePlanRow,
     ProfilePushResult,
@@ -341,4 +342,14 @@ def render_profile_push_table(rows: list[ProfilePushResult]) -> Table:
             row.result,
             safe(row.active_profile),
         )
+    return table
+
+
+def render_action_table(rows: list[ActionResult]) -> Table:
+    table = _table("Command result", ["Sentinel", "Result", "Detail"])
+    for row in rows:
+        detail = row.error or row.delivery
+        if row.technology and row.duration_seconds is not None:
+            detail = f"{row.technology} {row.duration_seconds}s"
+        table.add_row(safe(row.sentinel_id), row.result, safe(detail))
     return table

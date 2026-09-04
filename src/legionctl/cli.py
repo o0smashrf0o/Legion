@@ -5,9 +5,11 @@ from typing import Annotated
 import typer
 
 from legionctl import __version__
+from legionctl.commands import credential as credential_commands
 from legionctl.commands import group as group_commands
 from legionctl.commands import node as node_commands
 from legionctl.commands import profile as profile_commands
+from legionctl.commands.actions import reboot_cmd, scan_cmd, test_alert_cmd
 from legionctl.commands.discover import discover_cmd
 from legionctl.commands.status import events_cmd, health_cmd, status_cmd
 from legionctl.context import AppContext
@@ -23,10 +25,14 @@ app = typer.Typer(
 app.add_typer(node_commands.app, name="node")
 app.add_typer(group_commands.app, name="group")
 app.add_typer(profile_commands.app, name="profile")
+app.add_typer(credential_commands.app, name="credential")
 app.command("discover")(discover_cmd)
 app.command("status")(status_cmd)
 app.command("health")(health_cmd)
 app.command("events")(events_cmd)
+app.command("test-alert")(test_alert_cmd)
+app.command("scan")(scan_cmd)
+app.command("reboot")(reboot_cmd)
 
 
 def _version_callback(value: bool) -> None:

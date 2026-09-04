@@ -23,6 +23,10 @@ def test_help() -> None:
     assert "status" in result.stdout
     assert "health" in result.stdout
     assert "events" in result.stdout
+    assert "test-alert" in result.stdout
+    assert "scan" in result.stdout
+    assert "reboot" in result.stdout
+    assert "credential" in result.stdout
 
 
 def test_profile_validate_example(example_profile_path: Path) -> None:
