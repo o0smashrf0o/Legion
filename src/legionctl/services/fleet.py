@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable, Sequence
-from typing import Literal, TypeVar
+from typing import Any, Literal, TypeVar
 
 import httpx
 
@@ -40,7 +40,7 @@ def error_message(exc: BaseException) -> str:
     return redact_secrets(str(exc) or exc.__class__.__name__)
 
 
-def fleet_exit_code(rows: Sequence[FleetNodeStatus | FleetNodeEvents]) -> int:
+def fleet_exit_code(rows: Sequence[Any]) -> int:
     if not rows:
         return 1
     failures = [row for row in rows if not row.ok]

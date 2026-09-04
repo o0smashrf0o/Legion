@@ -5,6 +5,7 @@ from typing import Any
 
 from rich.console import Console
 
+from legionctl.models.deploy import ProfilePlanRow, ProfilePushResult
 from legionctl.models.discovery import DiscoveredService, DiscoveryIssue
 from legionctl.models.fleet import FleetNodeEvents, FleetNodeHealth, FleetNodeStatus
 from legionctl.models.inventory import Group, SentinelNode
@@ -63,3 +64,42 @@ def health_payload(rows: list[FleetNodeHealth]) -> dict[str, Any]:
 
 def events_payload(rows: list[FleetNodeEvents]) -> dict[str, Any]:
     return {"results": [row.model_dump(mode="json") for row in rows]}
+
+
+def profile_list_payload(profiles: list[Profile]) -> dict[str, Any]:
+    return {
+        "profiles": [
+            {
+                "profile_id": profile.profile_id,
+                "revision": profile.revision,
+                "rules": len(profile.rules),
+                "technologies": profile.technologies(),
+                "description": profile.description,
+            }
+            for profile in profiles
+        ]
+    }
+
+
+def profile_plan_payload(profile: Profile, plan: list[ProfilePlanRow]) -> dict[str, Any]:
+    return {
+        "profile_id": profile.profile_id,
+        "revision": profile.revision,
+        "plan": [row.model_dump(mode="json") for row in plan],
+    }
+
+
+def profile_push_payload(
+    profile: Profile,
+    plan: list[ProfilePlanRow],
+    results: list[ProfilePushResult],
+    *,
+    dry_run: bool,
+) -> dict[str, Any]:
+    return {
+        "profile_id": profile.profile_id,
+        "revision": profile.revision,
+        "dry_run": dry_run,
+        "plan": [row.model_dump(mode="json") for row in plan],
+        "results": [row.model_dump(mode="json") for row in results],
+    }

@@ -40,6 +40,8 @@ def audit_action(
     dry_run: bool = False,
     confirmed_with_yes: bool = False,
     details: dict[str, Any] | None = None,
+    profile_id: str | None = None,
+    profile_revision: int | None = None,
 ) -> None:
     write_audit_record(
         build_audit_record(
@@ -49,5 +51,7 @@ def audit_action(
             dry_run=dry_run,
             confirmed_with_yes=confirmed_with_yes,
             details=details,
+            profile_id=profile_id,
+            profile_revision=profile_revision,
         )
     )

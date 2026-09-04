@@ -7,6 +7,12 @@ from rich.markup import escape
 from rich.table import Table
 
 from legionctl.errors import ConfirmationDeclined
+from legionctl.models.deploy import (
+    ProfilePlanRow,
+    ProfilePushResult,
+    candidate_label,
+    current_label,
+)
 from legionctl.models.discovery import DiscoveredService, DiscoveryIssue
 from legionctl.models.fleet import FleetNodeEvents, FleetNodeHealth, FleetNodeStatus
 from legionctl.models.inventory import Group, SentinelNode
@@ -297,3 +303,42 @@ def render_profile_valid(profile: Profile) -> str:
         f"Rules: {len(profile.rules)}\n"
         f"Technologies: {technologies}"
     )
+
+
+def render_profiles_table(profiles: list[Profile]) -> Table:
+    table = _table("SOI profiles", ["ID", "Revision", "Rules", "Technologies", "Description"])
+    for profile in profiles:
+        table.add_row(
+            safe(profile.profile_id),
+            str(profile.revision),
+            str(len(profile.rules)),
+            safe(", ".join(profile.technologies()) or None),
+            safe(profile.description or None),
+        )
+    return table
+
+
+def render_profile_plan_table(rows: list[ProfilePlanRow]) -> Table:
+    table = _table(
+        "Profile deployment plan",
+        ["Sentinel", "Current profile", "Candidate", "Action"],
+    )
+    for row in rows:
+        table.add_row(
+            safe(row.sentinel_id),
+            safe(current_label(row)),
+            safe(candidate_label(row)),
+            row.action,
+        )
+    return table
+
+
+def render_profile_push_table(rows: list[ProfilePushResult]) -> Table:
+    table = _table("Profile deployment result", ["Sentinel", "Result", "Active profile"])
+    for row in rows:
+        table.add_row(
+            safe(row.sentinel_id),
+            row.result,
+            safe(row.active_profile),
+        )
+    return table
