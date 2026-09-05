@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import asyncio
+import subprocess
 import sys
 from pathlib import Path
 
@@ -73,6 +74,28 @@ def _audit(operation: str, targets: list[str], details: dict | None = None) -> N
 @app.get("/")
 def index():
     return render_template("index.html")
+
+
+@app.post("/api/ui/window")
+def api_ui_window():
+    action = str((request.get_json(silent=True) or {}).get("action") or "").lower()
+    if action in {"close", "minimize", "desktop"}:
+        for pat in (
+            "chromium.*127.0.0.1:8088",
+            "chromium-browser.*127.0.0.1:8088",
+            "chromium.*192.168.50.2:8088",
+            "chromium-browser.*192.168.50.2:8088",
+        ):
+            subprocess.run(
+                ["pkill", "-f", pat],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=False,
+            )
+        return jsonify({"ok": True, "action": action})
+    if action in {"maximize", "fullscreen"}:
+        return jsonify({"ok": True, "action": action})
+    return jsonify({"ok": False, "error": "unknown action"}), 400
 
 
 @app.get("/api/inventory")

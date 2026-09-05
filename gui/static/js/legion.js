@@ -571,6 +571,27 @@ $("load-events").addEventListener("click", async () => {
     </table>`;
 });
 
+async function hudWindow(action) {
+  if (action === "maximize") {
+    try {
+      const el = document.documentElement;
+      if (!document.fullscreenElement && el.requestFullscreen) el.requestFullscreen();
+    } catch (err) {}
+  }
+  if (action === "minimize") {
+    try {
+      if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen();
+    } catch (err) {}
+  }
+  try {
+    await postJSON("/api/ui/window", { action });
+  } catch (err) {}
+}
+
+$("win-min").addEventListener("click", () => hudWindow("minimize"));
+$("win-max").addEventListener("click", () => hudWindow("maximize"));
+$("win-close").addEventListener("click", () => hudWindow("close"));
+
 clock();
 setInterval(clock, 1000);
 addTarget();

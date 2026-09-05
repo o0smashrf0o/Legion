@@ -101,11 +101,14 @@ Defaults: `~/.config/legion`, `~/.local/share/legion`, `~/.local/state/legion`.
 Local kiosk GUI, Fox Hunter color scheme, `Legion.png` background. Not required for `legionctl`.
 
 ```bash
-pip install -e ".[gui]"
-./legion-gui
+python3 -m pip install --break-system-packages -e ".[gui]"
+chmod +x legion-gui install-desktop-icon.sh
+./install-desktop-icon.sh
 ```
 
-Then open http://127.0.0.1:8088 (on the Pi: http://192.168.50.2:8088).
+That installs the **Legion HUD** desktop icon (skull mark) and system pixmap. Double-click the icon. Chromium opens maximized with min/max/close in the HUD header. `./legion-gui` refreshes the shortcut on each launch.
+
+Open http://127.0.0.1:8088 if you start the GUI without a browser.
 
 ## Development
 

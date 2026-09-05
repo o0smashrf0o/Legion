@@ -117,7 +117,32 @@ header.app-header::after {
   margin-left: auto;
   display: flex;
   gap: 0.35rem;
+  padding-right: 8.5rem;
 }
+.win-btns {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  gap: 0;
+  z-index: 40;
+}
+button.win-btn {
+  min-width: 44px;
+  min-height: 40px;
+  padding: 0;
+  font-size: 1.15rem;
+  line-height: 1;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text);
+  border-radius: 0;
+  text-transform: none;
+  letter-spacing: 0;
+}
+button.win-btn:active { transform: none; }
+button.win-btn.win-close { color: var(--danger); }
 .pill {
   border: 1px solid var(--border);
   background: rgba(10, 7, 18, 0.75);
