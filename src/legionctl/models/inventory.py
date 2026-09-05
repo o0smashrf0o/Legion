@@ -23,6 +23,7 @@ class SentinelNode(BaseModel):
     groups: list[str] = Field(default_factory=list)
     enabled: bool = True
     last_seen_utc: datetime | None = None
+    map_placement_id: str | None = None
 
 
 class Group(BaseModel):

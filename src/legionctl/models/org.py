@@ -27,9 +27,11 @@ class Zone(BaseModel):
     description: str = ""
     zone_type: ZoneType = "physical"
     status: OrgStatus = "active"
+    map_id: str | None = None
+    geometry: dict[str, Any] | None = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
     created_at: datetime
     updated_at: datetime
-    metadata: dict[str, Any] = Field(default_factory=dict)
 
 
 class Cohort(BaseModel):
