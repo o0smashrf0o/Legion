@@ -654,11 +654,211 @@ async function importMap() {
 
 $("import-map").addEventListener("click", importMap);
 
-// initialize map tab hidden, show status
-document.getElementById("map-status").textContent = "No map loaded. Use Import map to add one.";
+// map state
+let mapId = null;
+let editMode = false;
+let markers = {};
+let overlays = {};
+let sentinelData = {};// map import support
+async function importMap() {
+  const name = document.getElementById("map-name").value.trim() || "New map";
+  const desc = document.getElementById("map-desc").value.trim() || "";
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.onchange = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async e => {
+      const base64 = reader.result.split(",")[1];
+      const mime = file.type || "image/png";
+      try {
+        const resp = await postJSON("/api/maps", {
+          name,
+          description: desc,
+          fileBase64: base64,
+          mimeType: mime,
+        });
+        if (resp.ok) {
+          mapId = resp.map_id;
+          document.getElementById("map-status").textContent = `Map "${name}" imported (${mapId})`;
+          await loadMap(mapId);
+        } else {
+          document.getElementById("map-status").textContent = "Import failed: " + (resp.error || "unknown");
+        }
+      } catch (err) {
+        document.getElementById("map-status").textContent = "Import error: " + err.message;
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}$("import-map").addEventListener("click", importMap);
 
-clock();
-setInterval(clock, 1000);
-addTarget();
-refresh();
-setInterval(refresh, 8000);
+document.getElementById("edit-mode").addEventListener("change", e => {
+  editMode = e.target.checked;
+  Object.values(markers).forEach(m => {
+    m.draggable = editMode;
+    m.style.cursor = editMode ? "grab" : "default";
+  });
+  Object.values(overlays).forEach(o => {
+    o.style.pointerEvents = editMode ? "auto" : "none";
+  });
+  document.getElementById("map-status").textContent = editMode ? "Edit mode: on — drag markers / move overlays" : "Edit mode: off — view only";
+});
+
+async function loadMap(id) {
+  Object.keys(markers).forEach(id => removeMarker(id));
+  Object.keys(overlays).forEach(id => removeOverlay(id));
+  markers = {};
+  overlays = [];
+  try {
+    const resp = await getJSON(`/api/maps/${id}`);
+    if (!resp.ok || !resp.map) return;
+    mapId = id;
+    document.getElementById("map-name").value = resp.map.name || "";
+    document.getElementById("map-desc").value = resp.map.description || "";
+    const canvas = $("map-canvas");
+    canvas.width = Math.max(800, window.innerWidth * 0.9);
+    canvas.height = Math.max(600, window.innerHeight * 0.5);
+    canvas.style.display = "block";
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+      if (sentinelData && Object.keys(sentinelData).length) placeMarkers();
+    };
+    img.src = `data:${resp.map.mimeType || "image/png"};base64,${resp.map.source_base64 || ""}`;
+    document.getElementById("map-status").textContent = `Loaded map ${resp.map.name || id}`;
+    try {
+      const sResp = await getJSON("/api/inventory");
+      if (sResp.ok && sResp.nodes) {
+        sentinelData = {};
+        for (const node of sResp.nodes) {
+          sentinelData[node.sentinel_id] = {
+            id: node.sentinel_id,
+            zone: node.zone,
+            cohort: node.cohort_id || null,
+            enabled: node.enabled,
+            health: node.health || "unknown",
+          };
+        }
+        placeMarkers();
+      }
+    } catch (e) {}
+  } catch (e) {
+    document.getElementById("map-status").textContent = "Failed to load map";
+  }
+}
+
+function placeMarkers() {
+  const canvas = $("map-canvas");
+  if (!canvas || !canvas.width || !canvas.height) return;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const [sid, data] of Object.entries(sentinelData)) {
+    const x = (data.x ?? 0.5) * canvas.width;
+    const y = (data.y ?? 0.5) * canvas.height;
+    const color = data.health === "online" ? "#b8ff2a" : data.health === "degraded" ? "#ffb020" : "#ff5c5c";
+    const radius = 8;
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = "#fff";
+    ctx.font = "10px Share Tech Mono, monospace";
+    ctx.fillText(sid, x + 10, y - 5);
+    markers[sid] = { x, y, radius, color };
+    if (editMode) markers[sid].draggable = true;
+  }
+  for (const [zid, ov] of Object.entries(zoneOverlays)) {
+    const z = zoneOverlays[zid];
+    if (!z) continue;
+    ctx.fillStyle = zoneColors[z.status] || "#b44cff";
+    ctx.globalAlpha = 0.15;
+    if (z.geometry && z.geometry.type === "rect") {
+      const coords = z.geometry.coordinates[0];
+      ctx.beginPath();
+      for (let i = 0; i < coords.length; i++) {
+        const p = coords[i];
+        const cx = (p[0] ?? 0.5) * canvas.width;
+        const cy = (p[1] ?? 0.5) * canvas.height;
+        if (i === 0) ctx.moveTo(cx, cy);
+        else ctx.lineTo(cx, cy);
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1.0;
+    ctx.fillStyle = "#fff";
+    ctx.font = "10px Share Tech Mono, monospace";
+    ctx.fillText(z.name || zid, (z.geometry?.coordinates?.[0]?.[0] ?? 0.5) * canvas.width + 10, (z.geometry?.coordinates?.[0]?.[1] ?? 0.5) * canvas.height - 5);
+  }
+}
+
+function removeMarker(sid) {
+  const m = markers[sid];
+  if (m && m.element) {
+    m.element.remove();
+    delete markers[sid];
+  }
+}
+function removeOverlay(zid) {
+  const o = overlays[zid];
+  if (o && o.element) {
+    o.element.remove();
+    delete overlays[zid];
+  }
+}
+
+async function highlightZone(zid) {
+  try {
+    const zResp = await getJSON(`/api/zones/${zid}`);
+    if (zResp.ok && zResp.zone) {
+      const z = zResp.zone;
+      const statusDiv = document.createElement("div");
+      statusDiv.style.marginTop = "1rem";
+      statusDiv.innerHTML = `<strong>Zone:</strong> ${z.name} (${z.status})<br>`;
+      try {
+        const cResp = await getJSON("/api/cohorts");
+        if (cResp.ok && cResp.cohorts) {
+          const zoneCohorts = cResp.cohorts.filter(c => c.zone_id === zid);
+          statusDiv.innerHTML += `<strong>Cohorts:</strong> ${zoneCohorts.map(c => `${c.display_name} (${c.readiness})`).join(", ")}`;
+        }
+      } catch (e) {}
+      document.getElementById("map-status").appendChild(statusDiv);
+    }
+  } catch (e) {}
+}
+
+const canvas = $("map-canvas");
+canvas.addEventListener("click", async e => {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  for (const [sid, m] of Object.entries(markers)) {
+    const dx = x - m.x;
+    const dy = y - m.y;
+    if (dx * dx + dy * dy <= m.radius * m.radius) {
+      window.location = `/sentinel/${sid}`;
+      break;
+    }
+  }
+  for (const [zid, o] of Object.entries(overlays)) {
+    if (o.type === "rect") {
+      if (x >= o.x && x <= o.x + o.width && y >= o.y && y <= o.y + o.height) {
+        highlightZone(zid);
+        break;
+      }
+    }
+  }
+});
+
+document.getElementById("map-status").textContent = "No map loaded. Use Import map to add one.";

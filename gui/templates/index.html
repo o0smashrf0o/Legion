@@ -98,9 +98,14 @@
             <label>Map name <input id="map-name" type="text" placeholder="New map" /></label>
             <label>Description <input id="map-desc" type="text" placeholder="Brief description" /></label>
             <button id="import-map">Import map</button>
+            <label>
+              <input type="checkbox" id="edit-mode" checked />
+              Edit mode
+            </label>
           </div>
           <canvas id="map-canvas" width="800" height="600" style="display:none;"></canvas>
           <div id="map-status" style="margin-top:1rem;"></div>
+          <div id="map-overlays" style="margin-top:1rem;"></div>
         </div>
       </section>
     </main>
