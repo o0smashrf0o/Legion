@@ -5,6 +5,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 from legionctl.constants import INVENTORY_SCHEMA_VERSION
+from legionctl.models.org import Cohort, Zone
 
 
 class SentinelNode(BaseModel):
@@ -38,6 +39,8 @@ class Inventory(BaseModel):
     schema_version: int = Field(default=INVENTORY_SCHEMA_VERSION, ge=1)
     nodes: list[SentinelNode] = Field(default_factory=list)
     groups: list[Group] = Field(default_factory=list)
+    zones: list[Zone] = Field(default_factory=list)
+    cohorts: list[Cohort] = Field(default_factory=list)
 
     def node_by_id(self, sentinel_id: str) -> SentinelNode | None:
         for node in self.nodes:
@@ -49,4 +52,22 @@ class Inventory(BaseModel):
         for group in self.groups:
             if group.group == name:
                 return group
+        return None
+
+    def zone_by_id(self, zone_id: str) -> Zone | None:
+        for zone in self.zones:
+            if zone.zone_id == zone_id:
+                return zone
+        return None
+
+    def cohort_by_id(self, cohort_id: str) -> Cohort | None:
+        for cohort in self.cohorts:
+            if cohort.cohort_id == cohort_id:
+                return cohort
+        return None
+
+    def cohort_for_sentinel(self, sentinel_id: str) -> Cohort | None:
+        for cohort in self.cohorts:
+            if cohort.status == "active" and sentinel_id in cohort.sentinel_ids:
+                return cohort
         return None

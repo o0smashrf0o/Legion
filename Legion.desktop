@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Legion
+Comment=Sentinel Network Control HUD
+Exec=sh -c '"$(dirname "%k")/legion-gui"'
+Path=.
+Icon=utilities-terminal
+Terminal=false
+Type=Application
+Categories=Network;Utility;

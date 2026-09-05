@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>LEGION · Sentinel Network Control</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/legion.css') }}" />
+</head>
+<body>
+  <div class="bg-art"></div>
+  <div class="bg-dim"></div>
+  <div id="app">
+    <header class="app-header">
+      <div>
+        <div class="brand">LEGION</div>
+        <div class="brand-sub">SENTINEL NETWORK CONTROL</div>
+      </div>
+      <div class="hud-pills">
+        <div id="pill-count" class="pill hot">FLEET · 0</div>
+        <div id="pill-clock" class="pill">--:--:--Z</div>
+      </div>
+    </header>
+    <nav class="tabs">
+      <button class="tab active" data-tab="fleet">Fleet</button>
+      <button class="tab" data-tab="profiles">Profiles</button>
+      <button class="tab" data-tab="events">Events</button>
+    </nav>
+    <main>
+      <section id="fleet" class="panel active">
+        <div class="crumb" id="fleet-crumb">LEGION // FLEET</div>
+        <div id="fleet-stats" class="grid stats"></div>
+        <div class="card filters">
+          <label for="fleet-search">Search</label>
+          <input id="fleet-search" type="search" placeholder="Sentinel, Zone, Cohort, profile" />
+          <div class="row-actions">
+            <select id="filter-zone" aria-label="Filter Zone"><option value="">All Zones</option></select>
+            <select id="filter-state" aria-label="Filter state"><option value="">All states</option></select>
+          </div>
+        </div>
+        <div class="split">
+          <div id="fleet-tree" class="card"></div>
+          <div id="fleet-detail" class="card"></div>
+        </div>
+        <div class="card editor">
+          <h3>FLEET ACTIONS</h3>
+          <div class="fields">
+            <label>New Zone name<input id="new-zone-name" type="text" placeholder="North Entry" /></label>
+            <label>New Cohort name<input id="new-cohort-name" type="text" placeholder="North Entry Cohort 01" /></label>
+          </div>
+          <div class="row-actions">
+            <button class="primary" id="create-zone">Create Zone</button>
+            <button class="primary" id="create-cohort">Create Cohort</button>
+          </div>
+        </div>
+        <div id="fleet-grid" class="grid"></div>
+      </section>
+      <section id="profiles" class="panel">
+        <div class="card editor">
+          <h3>SOI WATCHLIST</h3>
+          <p class="meta">Broadcast identifiers Sentinels should match: SSID, BSSID/MAC, UUID, OUI, names.</p>
+          <label for="p-id">Profile ID</label>
+          <input id="p-id" type="text" placeholder="event-alpha" autocomplete="off" />
+          <label for="p-desc">Description</label>
+          <input id="p-desc" type="text" placeholder="Event Alpha baseline" autocomplete="off" />
+          <div id="target-list"></div>
+          <div class="row-actions">
+            <button id="add-target">Add target</button>
+            <button class="primary" id="save-profile">Save</button>
+            <button class="warn" id="push-profile">Push to fleet</button>
+          </div>
+        </div>
+        <div id="profile-grid" class="grid"></div>
+      </section>
+      <section id="events" class="panel">
+        <div class="card">
+          <h3>RECENT EVENTS</h3>
+          <div class="row-actions">
+            <select id="event-node"></select>
+            <button class="primary" id="load-events">Load</button>
+          </div>
+          <div class="events" id="event-table"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div class="modal-back" id="modal">
+    <div class="modal">
+      <h2 id="modal-title">CONFIRM</h2>
+      <p class="meta" id="modal-body"></p>
+      <div class="row-actions">
+        <button class="danger" id="modal-yes">Confirm</button>
+        <button id="modal-no">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script src="{{ url_for('static', filename='js/legion.js') }}"></script>
+</body>
+</html>

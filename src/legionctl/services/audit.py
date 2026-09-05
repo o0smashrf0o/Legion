@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import getpass
+import json
 from datetime import UTC, datetime
 from typing import Any
 
@@ -64,3 +65,22 @@ def build_audit_record(
 def write_audit_record(record: AuditRecord, paths: LegionPaths | None = None) -> None:
     resolved = paths or get_paths()
     append_jsonl(resolved.audit_log, record.model_dump(mode="json"))
+
+
+def read_recent_audit(limit: int = 20, paths: LegionPaths | None = None) -> list[dict[str, Any]]:
+    resolved = paths or get_paths()
+    if not resolved.audit_log.exists():
+        return []
+    records: list[dict[str, Any]] = []
+    for line in reversed(resolved.audit_log.read_text(encoding="utf-8").splitlines()):
+        if not line.strip():
+            continue
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(payload, dict):
+            records.append(payload)
+        if len(records) >= limit:
+            break
+    return records

@@ -5,10 +5,14 @@ from typing import Annotated
 import typer
 
 from legionctl import __version__
+from legionctl.commands import cohort as cohort_commands
 from legionctl.commands import credential as credential_commands
+from legionctl.commands import fleet as fleet_commands
 from legionctl.commands import group as group_commands
 from legionctl.commands import node as node_commands
 from legionctl.commands import profile as profile_commands
+from legionctl.commands import sentinel as sentinel_commands
+from legionctl.commands import zone as zone_commands
 from legionctl.commands.actions import reboot_cmd, scan_cmd, test_alert_cmd
 from legionctl.commands.discover import discover_cmd
 from legionctl.commands.status import events_cmd, health_cmd, status_cmd
@@ -26,6 +30,10 @@ app.add_typer(node_commands.app, name="node")
 app.add_typer(group_commands.app, name="group")
 app.add_typer(profile_commands.app, name="profile")
 app.add_typer(credential_commands.app, name="credential")
+app.add_typer(fleet_commands.app, name="fleet")
+app.add_typer(zone_commands.app, name="zone")
+app.add_typer(cohort_commands.app, name="cohort")
+app.add_typer(sentinel_commands.app, name="sentinel")
 app.command("discover")(discover_cmd)
 app.command("status")(status_cmd)
 app.command("health")(health_cmd)

@@ -4,6 +4,9 @@ Linux-first, open-source, CLI-first command-and-control for a fleet of autonomou
 
 The executable is `legionctl`. Fleet configuration documents are **SOI profiles**.
 
+**Fleet hierarchy:** LEGION → Fleet → Zones → Cohorts → Primus / Sentinels.
+Groups remain ad hoc CLI labels; Cohorts are structured operational units. See `docs/fleet.md`.
+
 ## Purpose
 
 Legion is the Sentinel **management plane**. An operator can:
@@ -92,6 +95,17 @@ $XDG_STATE_HOME/legion/    # audit.jsonl, discovery cache
 ```
 
 Defaults: `~/.config/legion`, `~/.local/share/legion`, `~/.local/state/legion`.
+
+## Pi HUD (optional)
+
+Local kiosk GUI, Fox Hunter color scheme, `Legion.png` background. Not required for `legionctl`.
+
+```bash
+pip install -e ".[gui]"
+./legion-gui
+```
+
+Then open http://127.0.0.1:8088 (on the Pi: http://192.168.50.2:8088).
 
 ## Development
 

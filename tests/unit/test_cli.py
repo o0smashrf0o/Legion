@@ -27,6 +27,9 @@ def test_help() -> None:
     assert "scan" in result.stdout
     assert "reboot" in result.stdout
     assert "credential" in result.stdout
+    assert "fleet" in result.stdout
+    assert "zone" in result.stdout
+    assert "cohort" in result.stdout
 
 
 def test_profile_validate_example(example_profile_path: Path) -> None:
