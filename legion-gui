@@ -7,4 +7,9 @@ if [[ -x "$ROOT/.venv/bin/python" ]]; then
 else
   PY="${PYTHON:-python3}"
 fi
-exec "$PY" "$ROOT/gui/app.py"
+# Start Flask in the background
+"$PY" "$ROOT/gui/app.py" &
+# Give the server a moment to start up
+sleep 2
+# Launch Chromium in kiosk mode pointing at the Legion HUD
+chromium-browser --kiosk --noerrdialogs --disable-infobars http://192.168.50.2:8088

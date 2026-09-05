@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Legion HUD
+Comment=Legion Fleet GUI – Zone/Cohort/Sentinel hierarchy
+Exec=bash -c '~/Legion/legion-gui'
+Icon=legion
+Categories=Network;
