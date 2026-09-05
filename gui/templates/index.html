@@ -33,6 +33,7 @@
       <button class="tab active" data-tab="fleet">Fleet</button>
       <button class="tab" data-tab="profiles">Profiles</button>
       <button class="tab" data-tab="events">Events</button>
+      <button class="tab" data-tab="map">Map</button>
     </nav>
     <main>
       <section id="fleet" class="panel active">
@@ -88,6 +89,18 @@
             <button class="primary" id="load-events">Load</button>
           </div>
           <div class="events" id="event-table"></div>
+        </div>
+      </section>
+      <section id="map" class="panel" data-tab="map">
+        <div class="card">
+          <h3>MAP</h3>
+          <div class="map-controls">
+            <label>Map name <input id="map-name" type="text" placeholder="New map" /></label>
+            <label>Description <input id="map-desc" type="text" placeholder="Brief description" /></label>
+            <button id="import-map">Import map</button>
+          </div>
+          <canvas id="map-canvas" width="800" height="600" style="display:none;"></canvas>
+          <div id="map-status" style="margin-top:1rem;"></div>
         </div>
       </section>
     </main>

@@ -592,6 +592,71 @@ $("win-min").addEventListener("click", () => hudWindow("minimize"));
 $("win-max").addEventListener("click", () => hudWindow("maximize"));
 $("win-close").addEventListener("click", () => hudWindow("close"));
 
+function showTab(tabId) {
+  // hide all panels
+  document.querySelectorAll(".panel").forEach(p => p.style.display = "none");
+  // show selected
+  const panel = document.getElementById(tabId);
+  if (panel) panel.style.display = "block";
+}
+
+// initialize active tab
+showTab("fleet");
+
+// tab click handler
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".panel").forEach(p => p.style.display = "none");
+    const active = document.querySelector(`.panel[data-tab="${btn.dataset.tab}"]`);
+    if (active) active.style.display = "block";
+  });
+});
+
+// Map import support
+async function importMap() {
+  const name = document.getElementById("map-name").value.trim() || "New map";
+  const desc = document.getElementById("map-desc").value.trim() || "";
+  // file input
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.onchange = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async e => {
+      const base64 = reader.result.split(",")[1];
+      const mime = file.type || "image/png";
+      try {
+        const resp = await postJSON("/api/maps", {
+          name,
+          description: desc,
+          fileBase64: base64,
+          mimeType: mime,
+        });
+        if (resp.ok) {
+          document.getElementById("map-status").textContent = `Map "${name}" imported (${resp.map_id})`;
+          // optionally refresh map display
+          loadMap(resp.map_id);
+        } else {
+          document.getElementById("map-status").textContent = "Import failed: " + (resp.error || "unknown");
+        }
+      } catch (err) {
+        document.getElementById("map-status").textContent = "Import error: " + err.message;
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+$("import-map").addEventListener("click", importMap);
+
+// initialize map tab hidden, show status
+document.getElementById("map-status").textContent = "No map loaded. Use Import map to add one.";
+
 clock();
 setInterval(clock, 1000);
 addTarget();

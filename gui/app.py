@@ -4,14 +4,19 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import json
 import subprocess
 import sys
 from pathlib import Path
+from uuid import uuid4
 
 from flask import Flask, jsonify, render_template, request
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
+MAPS_DIR = ROOT / "maps"
+MAPS_JSON = MAPS_DIR / "maps.json"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
@@ -392,6 +397,70 @@ def api_events():
         )
     )
     return jsonify({"ok": True, "results": [row.model_dump(mode="json") for row in rows]})
+
+
+@app.get("/api/maps")
+def api_maps_list():
+    if MAPS_JSON.exists():
+        try:
+            maps = json.loads(MAPS_JSON.read_text(encoding="utf-8"))
+            return jsonify({"ok": True, "maps": maps})
+        except Exception as e:
+            return jsonify({"ok": False, "error": str(e)}), 500
+    return jsonify({"ok": True, "maps": []})
+
+
+@app.post("/api/maps")
+def api_map_import():
+    body = request.get_json(silent=True) or {}
+    name = (body.get("name") or "").strip()
+    description = (body.get("description") or "").strip()
+    file_b64 = body.get("fileBase64")
+    mime = body.get("mimeType", "image/png")
+    if not name:
+        return jsonify({"ok": False, "error": "name is required"}), 400
+    # ensure dir exists
+    MAPS_DIR.mkdir(parents=True, exist_ok=True)
+    # determine extension
+    ext = mime.split("/")[-1] if "/" in mime else "png"
+    map_id = str(uuid4())
+    # decode and save file
+    try:
+        data = base64.b64decode(file_b64)
+    except Exception:
+        return jsonify({"ok": False, "error": "invalid base64"}), 400
+    filename = f"{map_id}.{ext}"
+    filepath = MAPS_DIR / filename
+    try:
+        filepath.write_bytes(data)
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"cannot write file: {e}"}), 500
+    # read dimensions if possible via Pillow; if not, set None
+    width_px = None
+    height_px = None
+    # read metadata
+    new_entry = {
+        "map_id": map_id,
+        "name": name,
+        "description": description,
+        "source_filename": filename,
+        "width_px": width_px,
+        "height_px": height_px,
+        "status": "active",
+    }
+    # load existing maps and append
+    maps = []
+    if MAPS_JSON.exists():
+        try:
+            maps = json.loads(MAPS_JSON.read_text(encoding="utf-8"))
+        except Exception:
+            maps = []
+    maps.append(new_entry)
+    try:
+        MAPS_JSON.write_text(json.dumps(maps, indent=2) + "\n", encoding="utf-8")
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"cannot save metadata: {e}"}), 500
+    return jsonify({"ok": True, "map_id": map_id, "maps": maps})
 
 
 @app.post("/api/actions/test-alert")
