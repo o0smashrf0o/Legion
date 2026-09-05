@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer
@@ -25,5 +25,5 @@ class AuditRecord(BaseModel):
         if value.tzinfo is None:
             utc = value.replace(microsecond=0)
         else:
-            utc = value.astimezone(UTC).replace(microsecond=0)
+            utc = value.astimezone(datetime.timezone.utc).replace(microsecond=0)
         return utc.strftime("%Y-%m-%dT%H:%M:%SZ")

@@ -9,6 +9,7 @@ from legionctl.commands import cohort as cohort_commands
 from legionctl.commands import credential as credential_commands
 from legionctl.commands import fleet as fleet_commands
 from legionctl.commands import group as group_commands
+from legionctl.commands import map_commands
 from legionctl.commands import node as node_commands
 from legionctl.commands import profile as profile_commands
 from legionctl.commands import sentinel as sentinel_commands
@@ -33,6 +34,7 @@ app.add_typer(credential_commands.app, name="credential")
 app.add_typer(fleet_commands.app, name="fleet")
 app.add_typer(zone_commands.app, name="zone")
 app.add_typer(cohort_commands.app, name="cohort")
+app.add_typer(map_commands.app, name="map")
 app.add_typer(sentinel_commands.app, name="sentinel")
 app.command("discover")(discover_cmd)
 app.command("status")(status_cmd)

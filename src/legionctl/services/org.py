@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
 from legionctl.constants import NOMINAL_COHORT_SIZE
-from legionctl.errors import InventoryError, TargetNotFoundError, UsageError
+from legionctl.errors import InventoryError, LegionError, TargetNotFoundError, UsageError
 from legionctl.models.fleet import FleetNodeStatus
 from legionctl.models.inventory import Inventory, SentinelNode
 from legionctl.models.org import (
@@ -15,7 +17,7 @@ from legionctl.models.org import (
 )
 from legionctl.services.audit import utc_now
 from legionctl.services.inventory import load_inventory, save_inventory
-from legionctl.settings import LegionPaths
+from legionctl.settings import LegionPaths, get_paths
 
 
 def list_zones(paths: LegionPaths | None = None) -> list[Zone]:
@@ -545,3 +547,38 @@ def assignment_for(sentinel_id: str, paths: LegionPaths | None = None) -> dict[s
         else "Sentinel",
         "groups": node.groups,
     }
+
+
+def load_maps(paths: LegionPaths | None = None) -> list[dict[str, Any]]:
+    """Load the list of imported maps from maps.json."""
+    paths = paths or get_paths()
+    maps_path = Path(paths.state_dir) / "maps.json"
+    if not maps_path.exists():
+        return []
+    try:
+        with maps_path.open(encoding="utf-8") as f:
+            result: list[dict[str, Any]] = json.load(f)
+        return result
+    except Exception:
+        return []
+
+
+def get_map(map_id: str, paths: LegionPaths | None = None) -> dict[str, Any]:
+    """Get one map's metadata by map_id."""
+    paths = paths or get_paths()
+    maps = load_maps(paths)
+    for m in maps:
+        if m.get("map_id") == map_id:
+            return m
+    raise LegionError(f"Map '{map_id}' is not in inventory")
+
+
+def archive_map(map_id: str, paths: LegionPaths | None = None) -> None:
+    """Archive a map (marks it inactive by removing it from the active list)."""
+    paths = paths or get_paths()
+    maps = load_maps(paths)
+    archived = [m for m in maps if m.get("map_id") != map_id]
+    if len(archived) == len(maps):
+        raise LegionError(f"Map '{map_id}' is not in inventory")
+    maps_path = Path(paths.state_dir) / "maps.json"
+    maps_path.write_text(json.dumps(archived, indent=2) + "\n", encoding="utf-8")
