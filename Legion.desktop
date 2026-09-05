@@ -1,9 +1,10 @@
 [Desktop Entry]
-Name=Legion
+Version=1.0
+Type=Application
+Name=Legion HUD
 Comment=Sentinel Network Control HUD
 Exec=sh -c '"$(dirname "%k")/legion-gui"'
 Path=.
-Icon=utilities-terminal
+Icon=/home/smash/Legion/Legion-HUD.png
 Terminal=false
-Type=Application
 Categories=Network;Utility;
